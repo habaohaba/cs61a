@@ -103,6 +103,16 @@ def autocorrect(user_word, valid_words, diff_function, limit):
     """
     # BEGIN PROBLEM 5
     "*** YOUR CODE HERE ***"
+    if user_word in valid_words:
+        return user_word
+    else:
+        dif = []
+        for word in valid_words:
+            dif.append([word, diff_function(user_word, word, limit)])
+        if min(dif, key=lambda item:item[1])[1] > limit:
+            return user_word
+        else:
+            return min(dif, key=lambda item:item[1])[0]
     # END PROBLEM 5
 
 
@@ -112,32 +122,44 @@ def shifty_shifts(start, goal, limit):
     their lengths.
     """
     # BEGIN PROBLEM 6
-    assert False, 'Remove this line'
+    def help(start, goal, limit, now=0):
+        if len(start) == 1 and len(goal) >= 1:
+            if start[0] == goal[0]:
+                return len(goal)-1
+            else:
+                return len(goal)
+        elif len(goal) == 1 and len(start) >= 1:
+            if start[0] == goal[0]:
+                return len(start)-1
+            else:
+                return len(start)
+        elif len(start) == 0 or len(goal) == 0:
+            return 0
+        else:
+            if start[0] == goal[0]:
+                return help(start[1:], goal[1:], limit, now) 
+            else:
+                now = now + 1
+                if now > limit:
+                    return 1 
+                return 1 + help(start[1:], goal[1:], limit, now)
+    return help(start, goal, limit, now=0) 
     # END PROBLEM 6
 
 
 def pawssible_patches(start, goal, limit):
     """A diff function that computes the edit distance from START to GOAL."""
-    assert False, 'Remove this line'
-
-    if ______________: # Fill in the condition
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
-
-    elif ___________: # Feel free to remove or add additional cases
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
-
-    else:
-        add_diff = ... # Fill in these lines
-        remove_diff = ...
-        substitute_diff = ...
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
-
+    def help(start, goal, limit, now):
+        if len(start) == 0:
+            return len(goal) + now
+        if len(goal) == 0:
+            return len(start) + now
+        if now > limit:
+            return limit + 1
+        if start[0] == goal[0]:
+            return help(start[1:], goal[1:], limit, now)
+        return min(help(start, goal[1:], limit, now+1), help(start[1:], goal, limit, now+1), help(start[1:], goal[1:], limit, now+1))
+    return help(start, goal ,limit, now=0)
 
 def final_diff(start, goal, limit):
     """A diff function. If you implement this function, it will be used."""
@@ -153,6 +175,13 @@ def report_progress(typed, prompt, user_id, send):
     """Send a report of your id and progress so far to the multiplayer server."""
     # BEGIN PROBLEM 8
     "*** YOUR CODE HERE ***"
+    i = 0
+    while i < len(typed) and typed[i] == prompt[i]:
+        i = i + 1
+    ratio = i / len(prompt)
+    dic = {'id': user_id, 'progress': ratio}
+    send(dic)
+    return ratio
     # END PROBLEM 8
 
 
@@ -179,6 +208,15 @@ def time_per_word(times_per_player, words):
     """
     # BEGIN PROBLEM 9
     "*** YOUR CODE HERE ***"
+    times = []
+    for player in times_per_player:
+        i = 0
+        time = []
+        while i < len(player)-1:
+           time.append(player[i+1] - player[i])
+           i = i + 1
+        times.append(time)
+    return game(words, times)
     # END PROBLEM 9
 
 
@@ -194,6 +232,19 @@ def fastest_words(game):
     word_indices = range(len(all_words(game)))    # contains an *index* for each word
     # BEGIN PROBLEM 10
     "*** YOUR CODE HERE ***"
+    result = [[] for i in player_indices]
+    for i in word_indices:
+        for j in player_indices:
+            if j == 0:
+                index = 0
+                min_time = time(game, j, i)
+            cur_time = time(game, j ,i)
+            if cur_time < min_time:
+                min_time = cur_time
+                index = j
+        result[index] += [word_at(game, i)]
+    return result
+
     # END PROBLEM 10
 
 
