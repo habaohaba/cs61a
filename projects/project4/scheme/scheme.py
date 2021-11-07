@@ -134,6 +134,14 @@ class Frame(object):
             raise SchemeError('Incorrect number of arguments to function call')
         # BEGIN PROBLEM 10
         "*** YOUR CODE HERE ***"
+        child = Frame(self)
+        form = formals
+        val = vals
+        while form != nil:
+            child.define(form.first, val.first)
+            form = form.rest
+            val = val.rest
+        return child
         # END PROBLEM 10
 
 ##############
@@ -203,6 +211,7 @@ class LambdaProcedure(Procedure):
         of values, for a lexically-scoped call evaluated in environment ENV."""
         # BEGIN PROBLEM 11
         "*** YOUR CODE HERE ***"
+        return self.env.make_child_frame(self.formals, args) 
         # END PROBLEM 11
 
     def __str__(self):
@@ -269,6 +278,9 @@ def do_define_form(expressions, env):
     elif isinstance(target, Pair) and scheme_symbolp(target.first):
         # BEGIN PROBLEM 9
         "*** YOUR CODE HERE ***"
+        exp = Pair(expressions.first.rest, expressions.rest)
+        env.define(expressions.first.first, do_lambda_form(exp, env)) 
+        return expressions.first.first
         # END PROBLEM 9
     else:
         bad_target = target.first if isinstance(target, Pair) else target
@@ -344,6 +356,16 @@ def do_and_form(expressions, env):
     """
     # BEGIN PROBLEM 12
     "*** YOUR CODE HERE ***"
+    if len(expressions) == 0:
+        return True
+    elif len(expressions) == 1:
+        return scheme_eval(expressions.first, env)
+    else:
+        a = scheme_eval(expressions.first, env)
+        if is_true_primitive(a):
+            return do_and_form(expressions.rest, env) 
+        else:
+            return a 
     # END PROBLEM 12
 
 def do_or_form(expressions, env):
@@ -361,6 +383,17 @@ def do_or_form(expressions, env):
     """
     # BEGIN PROBLEM 12
     "*** YOUR CODE HERE ***"
+    if len(expressions) == 0:
+        return False 
+    elif len(expressions) == 1:
+        return scheme_eval(expressions.first, env)
+    else:
+        a = scheme_eval(expressions.first, env)
+        if is_true_primitive(a):
+            return a
+        else:
+            return do_or_form(expressions.rest, env) 
+
     # END PROBLEM 12
 
 def do_cond_form(expressions, env):
@@ -381,6 +414,15 @@ def do_cond_form(expressions, env):
         if is_true_primitive(test):
             # BEGIN PROBLEM 13
             "*** YOUR CODE HERE ***"
+            if clause.rest == nil and clause.first == 'else':
+                return True
+            elif clause.rest == nil:
+                return test 
+            else:
+                return eval_all(clause.rest, env) 
+        else:
+            if expressions.rest == nil:
+                return None
             # END PROBLEM 13
         expressions = expressions.rest
 
